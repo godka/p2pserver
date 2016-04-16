@@ -9,29 +9,36 @@ SimpleP2PServer::SimpleP2PServer()
 
 int SimpleP2PServer::GetPeer(unsigned int _id, sockaddr_in* sender, stUserListNode* stlist)
 {
-	auto ip = sender->sin_addr.s_addr;
-	auto port = sender->sin_port;
+	unsigned int ip = sender->sin_addr.s_addr;
+	unsigned int port = sender->sin_port;
+	unsigned int mip = 0;
+	unsigned int mport = 0;
 	if (context){
 		auto reply = (redisReply*) redisCommand(context, "lrange p2p:%d 0 -1", _id);
 		if (reply){
 			int len = reply->elements;
 			for (int i = 0; i < len; i++){
 				auto peerstr = reply->element[i]->str;
-				auto peerreply = (redisReply*)redisCommand(context, "get p2p:peernum:%s", peerstr);
+				auto peerreply = (redisReply*) redisCommand(context, "get p2p:peernum:%s", peerstr);
 				if (peerreply){
 					auto peernum = peerreply->integer;
 					if (peernum == 0){
-						redisCommand(context, "incr p2p:peernum:%s", peerstr);
-						redisCommand(context, "set p2p:connection:%d:%d %s", ip,port,peerstr);
-						sscanf(peerstr,"%d:%d", &stlist->ip, &stlist->port);
-						
-						return 0;
+						sscanf(peerstr, "%d:%d", &mip, &port);
+						if (mip == ip && mport == port){
+							continue;
+						}
+						else{
+							redisCommand(context, "incr p2p:peernum:%s", peerstr);
+							redisCommand(context, "set p2p:connection:%d:%d %s", ip, port, peerstr);
+							stlist->ip = mip; stlist->port = port;
+							break;
+						}
 					}
 				}
 			}
 		}
 	}
-	return -1;
+	return 0;
 }
 
 

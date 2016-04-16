@@ -47,7 +47,6 @@ struct stMessage
 		//stLoginMessage loginmember;
 		//stLogoutMessage logoutmember;
 		stUserListNode translatemessage;
-		unsigned int id;
 	}message;
 };
 

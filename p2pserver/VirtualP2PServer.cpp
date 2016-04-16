@@ -45,11 +45,11 @@ int VirtualP2PServer::Start()
 	int nResult = bind(PrimaryUDP, (sockaddr*) &local, sizeof(sockaddr));
 
 	sockaddr_in sender;
+	int dwSender = sizeof(sender);
 	stMessage recvbuf = {0};//client向Sever发送的消息格式
 	mrunning = true;
 	printf("Start Loop! Port:%d\n",SERVER_PORT);
 	while (mrunning){
-		int dwSender = sizeof(sender);
 		int ret = recvfrom(PrimaryUDP, (char *) &recvbuf, sizeof(stMessage), 0, (sockaddr *) &sender, (socklen_t*)&dwSender);
 		if (ret <= 0){
 			printf("recv error");
