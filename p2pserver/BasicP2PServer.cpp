@@ -95,7 +95,6 @@ int BasicP2PServer::GetUserCallback(sockaddr_in* sender, stMessage* Message){
 	GetPeer(_id, sender, &mlist);
 	AddUser(_id, sender);
 	SendPeerRequest(sender, &mlist);
-	
 	return 0;
 }
 int BasicP2PServer::SendPeerRequest(sockaddr_in* sender, stUserListNode* peerstr)
