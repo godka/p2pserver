@@ -10,12 +10,12 @@ BasicP2PServer::BasicP2PServer()
 int BasicP2PServer::RemoveUser(sockaddr_in* sock){
 	auto ip = sock->sin_addr.s_addr;
 	auto port = sock->sin_port;
-	auto reply = (redisReply*)redisCommand(context, "get p2p:id:%d:%d", ip, port);
+	auto reply = (redisReply*)redisCommand(context, "get p2p:id:%ud:%ud", ip, port);
 	if (reply){
 		auto id = reply->integer;
-		redisCommand(context, "lrem p2p:%d 0 %d:%d", id, ip, port);
-		redisCommand(context, "lrem p2p:list 0 %d:%d", ip, port);
-		redisCommand(context, "del p2p:id:%d:%d", ip, port);
+		redisCommand(context, "lrem p2p:%ud 0 %ud:%ud", id, ip, port);
+		redisCommand(context, "lrem p2p:list 0 %ud:%ud", ip, port);
+		redisCommand(context, "del p2p:id:%ud:%ud", ip, port);
 	}
 	return 0;
 }
@@ -24,8 +24,8 @@ int BasicP2PServer::AddUser(unsigned int id,sockaddr_in* sock){
 	auto ip = sock->sin_addr.s_addr;
 	auto port = sock->sin_port;
 	if (context){
-		redisCommand(context, "set p2p:id:%d:%d %d", ip, port, id);
-		redisCommand(context, "lpush p2p:%d %d:%d", id, ip, port);
+		redisCommand(context, "set p2p:id:%ud:%d %ud", ip, port, id);
+		redisCommand(context, "lpush p2p:%ud %ud:%ud", id, ip, port);
 	}
 	return 0;
 }
@@ -68,14 +68,17 @@ int BasicP2PServer::InitRedis()
 int BasicP2PServer::LoginCallback(sockaddr_in* sender, stMessage* Message){
 	auto ip = sender->sin_addr.s_addr;
 	auto port = sender->sin_port;
-	printf("%d,%d has login\n", ip, port);
+	printf("%ud,%ud has login\n", ip, port);
 	if (context){
-		redisCommand(context, "lpush p2p:list %d:%d", ip, port);
+		redisCommand(context, "lpush p2p:list %ud:%ud", ip, port);
 	}
 	return 0;
 }
 
 int BasicP2PServer::LogoutCallback(sockaddr_in* sender, stMessage* Message){
+	auto ip = sender->sin_addr.s_addr;
+	auto port = sender->sin_port;
+	printf("%ud,%ud has logout\n", ip, port);
 	RemoveUser(sender);
 	return 0;
 }
@@ -86,6 +89,7 @@ int BasicP2PServer::P2PTransCallback(sockaddr_in* sender, stMessage* Message){
 }
 
 int BasicP2PServer::GetUserCallback(sockaddr_in* sender, stMessage* Message){
+	LoginCallback(sender, Message);
 	stUserListNode mlist = { 0 };
 	auto _id = Message->message.translatemessage.ip;	//this is id
 	GetPeer(_id, sender, &mlist);
