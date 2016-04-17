@@ -34,10 +34,11 @@ public:
 	~VirtualP2PServer();
 	int Start();
 	int Stop();
-	virtual int LoginCallback(sockaddr_in* sender,stMessage* Message);
+	virtual int LoginCallback(sockaddr_in* sender, stMessage* Message);
 	virtual int LogoutCallback(sockaddr_in* sender, stMessage* Message);
 	virtual int P2PTransCallback(sockaddr_in* sender, stMessage* Message);
 	virtual int GetUserCallback(sockaddr_in* sender, stMessage* Message);
+	virtual int ACKCallback(sockaddr_in* sender, stMessage* Message);
 private:
 	int InitSock();
 	//stUserListNode* GetUser(char *username);
@@ -49,4 +50,5 @@ protected:
 #endif
 	UserList ClientList;
 	bool mrunning;
+	int recv_within_time(int fd, char *buf, size_t buf_n, struct sockaddr* addr, socklen_t *len, unsigned int sec, unsigned usec);
 };
